@@ -1,10 +1,12 @@
 import QtQuick 2.0
 
 Item{  
-    property double t1 : 0;
-    property double t2 : 1;
-    property double deltha: 1;
-    property double typeSpeed : 1;
+    property double slower    : 90;
+    property double t         : 0;
+    property double deltha    : 1;
+    property int    typeSpeed : 1;
+
+    property double amplituda : 5;
 
     Component
     {
@@ -23,13 +25,12 @@ Item{
 
             ///////////////////////////
             // функции скоростей
-            //////////////////////////
+            ///////////////////////////
 
             function sinSpeed()
-            {
-                t1 = t2;
-                t2++;
-                deltha = 1 + (Math.sin(t2) - Math.sin(t1))*10;
+            {                
+                t += 1 / slower;
+                deltha = (Math.sin(t)) * amplituda;
             }
 
             function linearSpeed(k)
@@ -39,46 +40,53 @@ Item{
 
             function quadSpeed()
             {
-                t1 = t2;
-                t2++;
-                deltha = t2*t2 - t1*t1;
+                t += 1 / slower;
+                deltha = (t*t) * amplituda;
             }
 
             function cubicSpeed()
             {
-                t1 = t2;
-                t2++;
-                deltha = t2*t2*t2 - t1*t1*t1;
+                t += 1 / slower;
+                deltha = (t*t*t) * amplituda;
             }
 
-            function limit()
+            function back(s)
             {
-                if (x>250)
-                    t = 0;
+                t += 1 / slower;;
+                deltha = ( (s+1)*t*t*t - s*t*t ) * amplituda;
+            }
+
+            function limit(lim)
+            {
+                if (x>lim)
+                    deltha = 0;
             }
 
             Timer
             {
-                interval: 10;
+                interval: slower;
                 repeat: true;
-                running: true;
+                running: true;                               
+
                 onTriggered: {
                     switch(typeSpeed)
                     {
-                    case 1: linearSpeed(1); break;
-                    case 2: quadSpeed();   break;
-                    case 3: cubicSpeed();  break;
-                    case 4: sinSpeed();    break;
-                    default: linearSpeed();
+                        case 1:  linearSpeed(1); break;
+                        case 2:  quadSpeed();    break;
+                        case 3:  cubicSpeed();   break;
+                        case 4:  sinSpeed();     break;
+                        case 5:  back(5);        break;
+                        default: linearSpeed();
                     }
 
+                    limit(550);
                     x += deltha;
                 }
-            }
+            }            
          }
     }
     PathView
-    {
+    {        
         id: myPath;
         anchors.fill: parent
         model: ListModelForPathView{}
@@ -88,7 +96,7 @@ Item{
             startX: 120; startY: 100
              PathQuad { x: 120; y: 25; controlX: 260; controlY: 75 }
              PathQuad { x: 120; y: 100; controlX: -20; controlY: 75 }
-        }
+        }        
     }    
 
     visible: true;
